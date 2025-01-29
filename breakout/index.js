@@ -8,16 +8,20 @@ const boardHeight = 300
 let xDirection = -2
 let yDirection = 2
 
+// Sound effects
+const brickSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3');
+const paddleSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
+const wallSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3');
+const loseSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2595/2595-preview.mp3');
+const winSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3');
+
 const userStart = [230, 10]
 let currentPosition = userStart
-
 const ballStart = [270, 40]
 let ballCurrentPosition = ballStart
-
 let timerId
 let score = 0
 
-//my block
 class Block {
   constructor(xAxis, yAxis) {
     this.bottomLeft = [xAxis, yAxis]
@@ -27,7 +31,6 @@ class Block {
   }
 }
 
-//all my blocks
 const blocks = [
   new Block(10, 270),
   new Block(120, 270),
@@ -46,65 +49,55 @@ const blocks = [
   new Block(450, 210),
 ]
 
-//draw my blocks
 function addBlocks() {
   for (let i = 0; i < blocks.length; i++) {
     const block = document.createElement('div')
     block.classList.add('block')
-    block.style.left = blocks[i].bottomLeft[0] + 'px'  
-    block.style.bottom = blocks[i].bottomLeft[1] + 'px'  
+    block.style.left = blocks[i].bottomLeft[0] + 'px'
+    block.style.bottom = blocks[i].bottomLeft[1] + 'px'
     grid.appendChild(block)
-    console.log(blocks[i].bottomLeft)
   }
 }
 addBlocks()
 
-//add user
 const user = document.createElement('div')
 user.classList.add('user')
 grid.appendChild(user)
 drawUser()
 
-//add ball
 const ball = document.createElement('div')
 ball.classList.add('ball')
 grid.appendChild(ball)
 drawBall()
 
-//move user
 function moveUser(e) {
   switch (e.key) {
     case 'ArrowLeft':
       if (currentPosition[0] > 0) {
         currentPosition[0] -= 10
-        console.log(currentPosition[0] > 0)
-        drawUser()   
+        drawUser()
       }
       break
     case 'ArrowRight':
       if (currentPosition[0] < (boardWidth - blockWidth)) {
         currentPosition[0] += 10
-        console.log(currentPosition[0])
-        drawUser()   
+        drawUser()
       }
       break
   }
 }
 document.addEventListener('keydown', moveUser)
 
-//draw User
 function drawUser() {
   user.style.left = currentPosition[0] + 'px'
   user.style.bottom = currentPosition[1] + 'px'
 }
 
-//draw Ball
 function drawBall() {
   ball.style.left = ballCurrentPosition[0] + 'px'
   ball.style.bottom = ballCurrentPosition[1] + 'px'
 }
 
-//move ball
 function moveBall() {
     ballCurrentPosition[0] += xDirection
     ballCurrentPosition[1] += yDirection
@@ -113,53 +106,44 @@ function moveBall() {
 }
 timerId = setInterval(moveBall, 30)
 
-//check for collisions
 function checkForCollisions() {
-  //check for block collision
   for (let i = 0; i < blocks.length; i++){
-    if
-    (
-      (ballCurrentPosition[0] > blocks[i].bottomLeft[0] && ballCurrentPosition[0] < blocks[i].bottomRight[0]) &&
-      ((ballCurrentPosition[1] + ballDiameter) > blocks[i].bottomLeft[1] && ballCurrentPosition[1] < blocks[i].topLeft[1]) 
-    )
-      {
+    if ((ballCurrentPosition[0] > blocks[i].bottomLeft[0] && ballCurrentPosition[0] < blocks[i].bottomRight[0]) &&
+        ((ballCurrentPosition[1] + ballDiameter) > blocks[i].bottomLeft[1] && ballCurrentPosition[1] < blocks[i].topLeft[1])) {
+      brickSound.play();
       const allBlocks = Array.from(document.querySelectorAll('.block'))
       allBlocks[i].classList.remove('block')
       blocks.splice(i,1)
-      changeDirection()   
+      changeDirection()
       score++
       scoreDisplay.innerHTML = score
       if (blocks.length == 0) {
+        winSound.play();
         scoreDisplay.innerHTML = 'You Win!'
         clearInterval(timerId)
         document.removeEventListener('keydown', moveUser)
       }
     }
   }
-  // check for wall hits
-  if (ballCurrentPosition[0] >= (boardWidth - ballDiameter) || ballCurrentPosition[0] <= 0 || ballCurrentPosition[1] >= (boardHeight - ballDiameter))
-  {
+
+  if (ballCurrentPosition[0] >= (boardWidth - ballDiameter) || ballCurrentPosition[0] <= 0 || ballCurrentPosition[1] >= (boardHeight - ballDiameter)) {
+    wallSound.play();
     changeDirection()
   }
 
-  //check for user collision
-  if
-  (
-    (ballCurrentPosition[0] > currentPosition[0] && ballCurrentPosition[0] < currentPosition[0] + blockWidth) &&
-    (ballCurrentPosition[1] > currentPosition[1] && ballCurrentPosition[1] < currentPosition[1] + blockHeight ) 
-  )
-  {
+  if ((ballCurrentPosition[0] > currentPosition[0] && ballCurrentPosition[0] < currentPosition[0] + blockWidth) &&
+      (ballCurrentPosition[1] > currentPosition[1] && ballCurrentPosition[1] < currentPosition[1] + blockHeight)) {
+    paddleSound.play();
     changeDirection()
   }
 
-  //game over
   if (ballCurrentPosition[1] <= 0) {
+    loseSound.play();
     clearInterval(timerId)
     scoreDisplay.innerHTML = 'You lose!'
     document.removeEventListener('keydown', moveUser)
   }
 }
-
 
 function changeDirection() {
   if (xDirection === 2 && yDirection === 2) {

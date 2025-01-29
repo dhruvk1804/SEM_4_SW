@@ -4,6 +4,7 @@
   width: 140px;
   display: flex;
   flex-wrap: wrap;
+  position: relative;
 }
 
 .grid div {
@@ -19,4 +20,13 @@
 .player-two {
   background-color: blue;
   border-radius: 10px;
+}
+
+.disc {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  transition: transform 0.4s ease-in-out;
+  z-index: -1;
 }

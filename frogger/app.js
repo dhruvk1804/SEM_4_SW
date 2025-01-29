@@ -1,5 +1,6 @@
 const timeLeftDisplay = document.querySelector('#time-left')
-const resultDisplay = document.querySelector('#result')
+const livesDisplay = document.querySelector('#lives')
+const scoreDisplay = document.querySelector('#score')
 const startPauseButton = document.querySelector('#start-pause-button')
 const squares = document.querySelectorAll('.grid div')
 const logsLeft = document.querySelectorAll('.log-left')
@@ -11,22 +12,23 @@ let currentIndex = 76
 const width = 9
 let timerId
 let outcomeTimerId
-let currentTime = 20
+let currentTime = 30
+let lives = 5
+let score = 0
 
 function moveFrog(e) {
     squares[currentIndex].classList.remove('frog')
-
     switch(e.key) {
-        case 'ArrowLeft' :
-             if (currentIndex % width !== 0) currentIndex -= 1
+        case 'ArrowLeft': 
+            if (currentIndex % width !== 0) currentIndex -= 1
             break
-        case 'ArrowRight' :
+        case 'ArrowRight': 
             if (currentIndex % width < width - 1) currentIndex += 1
             break
-        case 'ArrowUp' :
-            if (currentIndex - width >=0 ) currentIndex -= width
+        case 'ArrowUp': 
+            if (currentIndex - width >= 0) currentIndex -= width
             break
-        case 'ArrowDown' :
+        case 'ArrowDown': 
             if (currentIndex + width < width * width) currentIndex += width
             break
     }
@@ -49,23 +51,23 @@ function checkOutComes() {
 
 function moveLogLeft(logLeft) {
     switch(true) {
-        case logLeft.classList.contains('l1') :
+        case logLeft.classList.contains('l1'):
             logLeft.classList.remove('l1')
             logLeft.classList.add('l2')
             break
-        case logLeft.classList.contains('l2') :
+        case logLeft.classList.contains('l2'):
             logLeft.classList.remove('l2')
             logLeft.classList.add('l3')
             break
-        case logLeft.classList.contains('l3') :
+        case logLeft.classList.contains('l3'):
             logLeft.classList.remove('l3')
             logLeft.classList.add('l4')
             break
-        case logLeft.classList.contains('l4') :
+        case logLeft.classList.contains('l4'):
             logLeft.classList.remove('l4')
             logLeft.classList.add('l5')
             break
-        case logLeft.classList.contains('l5') :
+        case logLeft.classList.contains('l5'):
             logLeft.classList.remove('l5')
             logLeft.classList.add('l1')
             break
@@ -74,23 +76,23 @@ function moveLogLeft(logLeft) {
 
 function moveLogRight(logRight) {
     switch(true) {
-        case logRight.classList.contains('l1') :
+        case logRight.classList.contains('l1'):
             logRight.classList.remove('l1')
             logRight.classList.add('l5')
             break
-        case logRight.classList.contains('l2') :
+        case logRight.classList.contains('l2'):
             logRight.classList.remove('l2')
             logRight.classList.add('l1')
             break
-        case logRight.classList.contains('l3') :
+        case logRight.classList.contains('l3'):
             logRight.classList.remove('l3')
             logRight.classList.add('l2')
             break
-        case logRight.classList.contains('l4') :
+        case logRight.classList.contains('l4'):
             logRight.classList.remove('l4')
             logRight.classList.add('l3')
             break
-        case logRight.classList.contains('l5') :
+        case logRight.classList.contains('l5'):
             logRight.classList.remove('l5')
             logRight.classList.add('l4')
             break
@@ -99,15 +101,15 @@ function moveLogRight(logRight) {
 
 function moveCarLeft(carLeft) {
     switch(true) {
-        case carLeft.classList.contains('c1') :
+        case carLeft.classList.contains('c1'):
             carLeft.classList.remove('c1')
             carLeft.classList.add('c2')
             break
-        case carLeft.classList.contains('c2') :
+        case carLeft.classList.contains('c2'):
             carLeft.classList.remove('c2')
             carLeft.classList.add('c3')
             break
-        case carLeft.classList.contains('c3') :
+        case carLeft.classList.contains('c3'):
             carLeft.classList.remove('c3')
             carLeft.classList.add('c1')
             break
@@ -116,15 +118,15 @@ function moveCarLeft(carLeft) {
 
 function moveCarRight(carRight) {
     switch(true) {
-        case carRight.classList.contains('c1') :
+        case carRight.classList.contains('c1'):
             carRight.classList.remove('c1')
             carRight.classList.add('c3')
             break
-        case carRight.classList.contains('c2') :
+        case carRight.classList.contains('c2'):
             carRight.classList.remove('c2')
             carRight.classList.add('c1')
             break
-        case carRight.classList.contains('c3') :
+        case carRight.classList.contains('c3'):
             carRight.classList.remove('c3')
             carRight.classList.add('c2')
             break
@@ -132,27 +134,42 @@ function moveCarRight(carRight) {
 }
 
 function lose() {
-    if (
-        squares[currentIndex].classList.contains('c1') ||
+    if (squares[currentIndex].classList.contains('c1') || 
         squares[currentIndex].classList.contains('l4') ||
         squares[currentIndex].classList.contains('l5') ||
-        currentTime <= 0
-    ) {
-        resultDisplay.textContent = 'You lose!'
-        clearInterval(timerId)
-        clearInterval(outcomeTimerId)
-        squares[currentIndex].classList.remove('frog')
-        document.removeEventListener('keyup', moveFrog)
+        currentTime <= 0) {
+        lives--
+        livesDisplay.textContent = lives
+        
+        if (lives > 0) {
+            resetFrog()
+        } else {
+            scoreDisplay.textContent = 'Game Over! Score: ' + score
+            endGame()
+        }
     }
 }
 
 function win() {
     if (squares[currentIndex].classList.contains('ending-block')) {
-        resultDisplay.textContent = 'You Win!'
-        clearInterval(timerId)
-        clearInterval(outcomeTimerId)
-        document.removeEventListener('keyup', moveFrog)
+        score += 100
+        scoreDisplay.textContent = score
+        resetFrog()
     }
+}
+
+function resetFrog() {
+    squares[currentIndex].classList.remove('frog')
+    currentIndex = 76
+    squares[currentIndex].classList.add('frog')
+    currentTime = 20
+    timeLeftDisplay.textContent = currentTime
+}
+
+function endGame() {
+    clearInterval(timerId)
+    clearInterval(outcomeTimerId)
+    document.removeEventListener('keyup', moveFrog)
 }
 
 startPauseButton.addEventListener('click', () => {
